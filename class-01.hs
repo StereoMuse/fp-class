@@ -146,18 +146,20 @@ bothTrue True True = True
 bothTrue False True = False
 bothTrue True False = False
 bothTrue False False = False
-bothTrue _  _ = undefined
 
 
 -- д) Функция, возвращающая True, если только один из её аргументов равен True,
 -- и False в противном случае (пользоваться стандартными логическими операциями не следует).
 oneTrue :: Bool -> Bool -> Bool
-oneTrue = undefined
+oneTrue True True = False
+oneTrue True False = True
+oneTrue False True = True
+oneTrue False False = False
 
 -- е) Дана температура в градусах Фаренгейта. Вычислить соответствующую температуру
 -- в градусах Цельсия.
 f2c :: Double -> Double
-f2c = undefined
+f2c a = (a - 32)*5/9
 
 {-
    ж) Найти наибольший общий делитель двух целых чисел, пользуясь
@@ -165,13 +167,22 @@ f2c = undefined
       НОД(a, b) = НОД(b, a mod b), если b ≠ 0; 
       НОД(a, 0) = a.
 -}
--- gcd' :: ???
-gcd' = undefined
+gcd' :: Int -> Int -> Int
+gcd' a 0 = a
+gcd' a b = gcd' b (mod a b)
+
 
 -- з) Функция, возвращающая название дня недели по его номеру (от 1 до 7),
 --    если номер неправильный, генерируется исключение (функция error).
 dayOfWeek :: Int -> String
-dayOfWeek = undefined
+dayOfWeek 1 = "Monday"
+dayOfWeek 2 = "Tuesday"
+dayOfWeek 3 = "Wednesday"
+dayOfWeek 4 = "Thursday"
+dayOfWeek 5 = "Friday"
+dayOfWeek 6 = "Saturday"
+dayOfWeek 7 = "Sunday"
+dayOfWeek _ = error "Wrong!!!!"
 
 
 -- Далее типовые аннотации, если их нет, следует писать самостоятельно.
@@ -192,13 +203,20 @@ sign a
 	  x^2,  если 0 < x < 2,
           4,    если x ≥ 2.
 -}
-
-eval_f = undefined
+eval_f :: (Num a, Ord a) => a -> a
+eval_f a
+   | a <= 0 = a * (-1)
+   | a < 2 = a * a
+   | otherwise = 4
 
 -- б) Написать функцию, возвращающую текстовую характеристику ("hot", "warm", "cool", "cold")
 -- по заданному значению температуры в градусах Цельсия.
 describeTemperature :: Double -> String
-describeTemperature = undefined
+describeTemperature a
+  | a <= -10 = "cold"
+  | a <= 5 = "cool"
+  | a <= 25 = "warm"
+  | otherwise = "hot"
 
 {- 
    в) (*) Дан список температур в градусах Фаренгейта. Вывести для каждого значения
@@ -206,6 +224,7 @@ describeTemperature = undefined
 
   Решение:
 > map (describeTemperature . f2c) [82, 94, 50, 65, 34]
+["hot","hot","warm","warm","cool"]
 
   В этом решении с помощью операции (.) строится композиция (суперпозиция) функций
   и получившаяся функция применяется функцией map к каждому элементу списка.
@@ -220,17 +239,28 @@ sum_n n
   | otherwise = error "n should be >= 1"
 
 -- а) Вычислить сумму всех целых чисел от a до b включительно.
-sum_ab = undefined
+sum_ab a b
+  | b > a = b + sum_ab a (b-1)
+  | b == a = b	
+  | otherwise = 0
 
 {-
    б) Числовая последовательность определяется следующим образом:
       a1 = 1, a2 = 2, a3 = 3, a_k = a_{k−1} + a_{k−2} − 2*a_{k−3}, k = 4, 5, ...
       Вычислить её n-й элемент.
 -}
-eval_a_n = undefined
+eval_a_n n
+   | n <= 3 = n
+   | n > 3 = (eval_a_n (n-1)) + (eval_a_n (n-2)) - 2*(eval_a_n (n-3))
+   | otherwise = error "<0"
 
 -- в) Вычислить, пользуясь рекурсией, n-ю степень числа a (n - целое):
-pow = undefined
+--pow :: (Num a, Ord a) => a -> a -> Int
+pow a n
+   | n == 1 = a
+   | n > 1 = a * pow a (n-1)
+   | otherwise = error "ERROR"
+
 
 -- г) Пользуясь ранее написанной функцией pow, вычислить сумму: 1^k + 2^k + ... + n^k.
 sum_nk = undefined
