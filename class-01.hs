@@ -185,7 +185,8 @@ dayOfWeek _ = error "AAAA!!!!"
 -- 6) Условное определение функции
 
 -- Пример.
--- Определение знака числа (-1, 0, 1). Класс типов Ord определяет операции сравнения.
+-- Определение знака числа (-1, 0, 1). 
+-- Класс типов Ord определяет операции сравнения.
 sign :: (Num a, Ord a) => a -> Int
 sign a
    | a < 0 = -1
@@ -199,12 +200,20 @@ sign a
           4,    если x ≥ 2.
 -}
 
--- eval_f = 
+eval_f :: (Num a, Ord a) => a -> a
+eval_f x
+	| x <= 0 = (-1)*x
+	| x < 2 && x > 0 = x*x
+	| otherwise = 4
 
 -- б) Написать функцию, возвращающую текстовую характеристику ("hot", "warm", "cool", "cold")
 -- по заданному значению температуры в градусах Цельсия.
 describeTemperature :: Double -> String
-describeTemperature = undefined
+describeTemperature x
+	| x < 0 = "cold"
+	| x < 15 = "cool"
+	| x < 35 = "warm"
+	| otherwise = "hot"
 
 {- 
    в) (*) Дан список температур в градусах Фаренгейта. Вывести для каждого значения
@@ -220,38 +229,74 @@ describeTemperature = undefined
 -- 7) Рекурсия
 
 -- Пример. Вычислить сумму всех целых чисел от 1 до n (где n >= 1):
+sum_n :: Int -> Int
 sum_n 1 = 1
 sum_n n
   | n > 1 = n + sum_n (n-1)
   | otherwise = error "n should be >= 1"
 
 -- а) Вычислить сумму всех целых чисел от a до b включительно.
-sum_ab = undefined
+sum_ab :: Int -> Int -> Int
+sum_ab a b
+	| a < b = a + sum_ab (a + 1) b
+	| a == b = a
+	| otherwise = error "the end"
 
 {-
    б) Числовая последовательность определяется следующим образом:
       a1 = 1, a2 = 2, a3 = 3, a_k = a_{k−1} + a_{k−2} − 2*a_{k−3}, k = 4, 5, ...
       Вычислить её n-й элемент.
 -}
-eval_a_n = undefined
+eval_a_n :: Int -> Int
+eval_a_n n
+	| n == 1 = 1
+	| n == 2 = 2
+	| n == 3 = 3
+	| n > 3 = eval_a_n (n - 1) + eval_a_n(n - 2) - 2 * eval_a_n(n - 3)
+	| otherwise = error "very bad - you've entered negative number or 0"
 
 -- в) Вычислить, пользуясь рекурсией, n-ю степень числа a (n - целое):
-pow = undefined
+pow :: (Num a) => a -> Int -> a
+pow a n
+	| n == 0 = 1
+	| n == 1 = a
+	| n > 1 = a * pow a (n - 1)
+	| otherwise = error "very bad - you've entered negative number"
 
--- г) Пользуясь ранее написанной функцией pow, вычислить сумму: 1^k + 2^k + ... + n^k.
-sum_nk = undefined
+-- г) Пользуясь ранее написанной функцией pow, вычислить сумму: 
+-- 1^k + 2^k + ... + n^k.
+sum_nk :: Int -> Int -> Int
+sum_nk n k
+	| n == 1 = 1
+	| n > 1 = (pow n k) + (sum_nk (n - 1) k)
+	| otherwise = error "very bad - only positive numbers"
 
 -- д) Сумма факториалов чисел от 1 до n.
+sum_fact :: (Num a, Ord a) => a -> a
 sum_fact 1 = 1
-sum_fact n = undefined
+sum_fact n = (fact n) + (sum_fact (n - 1))
   where
-    fact n = undefined
+    fact n
+		| n == 1 = 1
+		| n > 1 = n * fact(n - 1)
+		| otherwise = error "baaad"
 
 -- е) Количество цифр целого числа
-number_digits = undefined
+number_digits :: Int -> Int
+number_digits 0 = 0
+number_digits n = 1 + number_digits(div n 10)
 
 -- ж) Проверить, является ли заданное число простым.
-isPrime = undefined
+isPrime :: Int -> Bool
+isPrime n
+	| n <= 0 = error "still bad"
+	| (n == 1) || (n == 2) || (n == 3) = True
+	| otherwise = goCount (n - 1)
+		where
+			isNotDivided a b = (a `mod` b) /= 0
+			goCount k
+				| k == 1 = True
+				| otherwise = (isNotDivided n k) && goCount(k - 1)
 
 -- 8) Разное
 
@@ -262,7 +307,9 @@ isPrime = undefined
   не делятся на 400 (например, годы 300, 1300 и 1900 не являются високосными,
   а 1200 и 2000 — являются).
 -}
-
-nDays year = undefined
+nDays :: Int -> Int
+nDays year
+	| isLeap = 366
+	| otherwise = 365
   where
-    isLeap = undefined
+    isLeap = ((year `mod` 4) == 0) && (((year `mod` 100) /= 0) || ((year `mod` 400) == 0))
