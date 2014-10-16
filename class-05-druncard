@@ -1,0 +1,124 @@
+{-# LANGUAGE EmptyDataDecls #-}
+
+module Drunkard where
+
+{-
+1. Определить типы данных, необходимые для представления игральной карты 
+в игре «Пьяница», учитывая, что всего в колоде 52 карты.
+-}
+
+data Suit =  Spades
+			| Clubs
+			| Diamonds
+			| Hearts
+			deriving (Show, Eq, Ord)
+
+-- 52
+data Value = Two
+			| Three
+			| Four
+			| Five
+			| Six
+			| Seven
+			| Eight
+			| Nine
+			| Ten
+			| Jack
+			| Queen
+			| King
+			| Ace
+			deriving (Show, Eq, Ord)
+			
+data Card = Card Value Suit
+			deriving (Show, Eq)
+
+-- 2. Определить функцию, проверяющую, что две переданные ей карты одной масти.
+cardValue:: Card -> Value
+cardValue (Card v _) = v
+
+cardSuit:: Card -> Suit
+cardSuit (Card _ s) = s
+
+sameSuit :: Card -> Card -> Bool
+sameSuit s1 s2 = cardSuit s1 == cardSuit s2
+
+{-
+3. Определить функцию, проверяющую, что переданная ей первой карта старше второй
+(масть в игре «Пьяница» игнорируется). Возвращённое значение EQ означает, что обе
+карты одинакового старшинства.
+-}
+-- стандартная версия игры
+beats :: Card -> Card -> Ordering
+c1 `beats` c2 = compare (cardValue c1) (cardValue c2)
+
+{-
+4. Определить функцию, которая по паре списков карт возвращает новую пару списков карт
+с учетом правил игры «Пьяница» (один раунд игры):
+* из вершин списков берутся две карты и добавляются в конец того списка, карта из
+которого старше оставшейся;
+* если первые взятые карты совпадают по достоинству, то из списков берутся и
+сравниваются следующие две карты (и так до тех пор, пока не будет определён победитель
+раунда).
+-}
+game_round :: ([Card], [Card]) -> ([Card], [Card])
+
+game_round ([], s2s) = ([], s2s)
+game_round (s1s, []) = (s1s, [])
+game_round ((s1:s1s) , (s2:s2s))
+	| s1 `beats` s2 == LT = (s1s, [s2] ++ s2s ++ [s1])
+	| s1 `beats` s2 == GT = ([s1] ++ s1s ++ [s2], s2s)
+	| otherwise = game_round (s1s, s2s)
+
+{-
+5. Определить функцию, которая по паре списков возвращает количество раундов, 
+необходимых для завершения игры (одна из колод оказывается пустой), и номер победителя.
+-}
+data Winner = First | Second
+	deriving (Show, Eq)
+	
+game :: ([Card], [Card]) -> (Winner, Int)
+game (x, y) = addFunc (x, y) 0
+	where
+		addFunc ([], _) n = (Second, n)
+		addFunc (_, []) n = (First, n)
+		addFunc (x, y) n = addFunc (game_round (x, y)) (n+1)
+
+{-
+6. Приведите здесь результаты как минимум пяти запусков функции game 
+(в каждом списке изначально должно быть не менее 10 карт).
+-}
+test1 = game 
+		([Card King Spades, Card Ace Diamonds, Card Nine Clubs, Card Four Hearts, Card Ace Diamonds, 
+		Card Six Clubs, Card Queen Spades, Card Ace Diamonds, Card Six Hearts], 
+		[Card Three Diamonds, Card Nine Spades, Card Eight Spades, Card Ace Clubs, Card Three Hearts, 
+		Card Jack Clubs])
+test2 = game 
+		([Card Three Diamonds, Card Nine Spades, Card Eight Spades, Card Ace Clubs, Card Three Hearts, 
+		Card Jack Clubs], 
+		[Card King Spades, Card Ace Diamonds, Card Nine Clubs, Card Four Hearts, Card Ace Diamonds, 
+		Card Six Clubs, Card Queen Spades, Card Ace Diamonds, Card Six Hearts])
+test3 = game 
+		([Card Four Diamonds, Card Ten Clubs, Card Two Diamonds, Card Three Spades, Card Five Diamonds, 
+		Card Six Clubs, Card King Spades, Card Ace Diamonds, Card Jack Hearts], 
+		[Card Three Diamonds, Card Three Spades, Card Eight Spades, Card Five Clubs, Card King Hearts, 
+		Card Jack Clubs])
+test4 = game 
+		([Card Seven Spades, Card Ace Diamonds, Card King Clubs, Card Four Hearts, Card Seven Diamonds, 
+		Card Six Clubs, Card Queen Spades, Card Four Diamonds, Card Ten Hearts], 
+		[Card Two Diamonds, Card Nine Spades, Card Eight Spades, Card Queen Clubs, Card Three Hearts, 
+		Card Five Clubs])
+test5 = game 
+		([Card King Spades, Card Eight Diamonds, Card Nine Clubs, Card Four Hearts, Card Ace Diamonds, 
+		Card Two Clubs, Card Three Spades, Card Five Diamonds, Card Six Hearts], 
+		[Card Three Diamonds, Card Two Spades, Card Seven Spades, Card King Clubs, Card Three Hearts, 
+		Card Jack Clubs])
+{-
+7 (необязательное упражнение). Реализуйте версию функции game, которая помимо результатов
+игры возвращает запись всех ходов (карты, выкладываемые по ходу игры для сравнения).
+8 (необязательное упражнение). При выполнении функций из упражнений 4 и 5 возможно
+зацикливание. Чтобы его избежать, можно предусмотреть максимальное количество повторений
+(для раундов и ходов в рамках одного раунда). Подумайте, как обнаружить факт зацикливания
+в функции 4? Можно ли применить такой же подход в функции 5? Что нужно возвращать в случае
+обнаружения факта зацикливания? Измените соответствующим образом типовые аннотации и
+напишите безопасные по отношению к зацикливанию версии функций game_round и game.
+-}
