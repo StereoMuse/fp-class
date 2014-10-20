@@ -1,0 +1,29 @@
+{-
+  Дан текстовый файл с информацией о студентах факультета в следующем формате:
+    ФАМИЛИЯ ИМЯ ОТЧЕСТВО;ВОЗРАСТ;КУРС;ГРУППА
+  Имя этого файла задаётся параметром командной строки. Остальные параметры определяют,
+  какое действие следует выполнить:
+-}
+
+import System.Environment
+import Data.List
+import System.IO
+
+-- ФАМИЛИЯ ИМЯ ОТЧЕСТВО;ВОЗРАСТ;КУРС;ГРУППА
+data Student = Student 
+	{ s :: String, n :: String, f :: String, a :: Int, c :: Int, d :: Int }
+		deriving ( Show, Eq, Ord )
+  
+dataBase:: String -> [Student]
+dataBase contents = foldl (\acc x -> createStudent x: acc) [] (lines contents)
+
+createStudent:: String -> Student
+createStudent s1 n1 f1 a1 c1 g1 = 
+	Student {s = s1, n = n1, f = f1, a = a1, c = c1, g = g1}
+
+{-
+  1) Вычислить средний возраст студентов заданной группы заданного курса.
+  2) Вычислить количество студентов в каждой группе каждого курса.
+  3) Создать файлы (с именами "<КУРС>_<ГРУППА>.txt") со списками всех студентов групп 
+  в формате ФАМИЛИЯ И.О.
+-}
