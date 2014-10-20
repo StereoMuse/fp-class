@@ -1,0 +1,66 @@
+{-
+  Все входные данные программы должны передаваться с помощью параметров
+  командной строки.
+  Разработайте утилиту со следующими возможностями:
+-}
+
+import System.Environment
+import System.IO
+import Data.Char
+import Data.List
+import System.Directory
+
+{-
+  1) подсчёт количества строк в заданном текстовом файле;
+  // main1 ["a.txt"]
+-}
+main1 :: [String] -> IO ()
+main1 args = do
+	let fileName = head args
+	readed <- readFile fileName
+	print $ additionalMain1 readed
+	
+additionalMain1 :: String -> Int
+additionalMain1 readed = foldl (\acc x -> acc+1 )0 $ lines readed
+{-
+  2) добавление заданной строки в начало (конец) заданного файла;
+  // main2begin ["aaa", "a.txt"]
+  // main2end ["ooo", "a.txt"]
+-}
+main2begin :: [String] -> IO ()
+main2begin args = do
+	let [newStr, fileName] = args
+	appendFile fileName newStr
+	
+main2end :: [String] -> IO ()
+main2end args = do
+	let [newStr, fileName] = args
+	readed <- readFile fileName
+	writeFile "b.txt" ( newStr ++ "\n" ++ readed)
+	renameFile "b.txt" fileName
+{-
+  3) преобразование всех буквенных символов заданного файла к верхнему
+     регистру (результат выводится на консоль);
+	 // main3 "aaa"
+-}
+main3 :: String -> String
+main3 str = (map (\x -> if isLetter x  then toUpper x  else x ) str)
+{-
+  4) построчное слияние двух заданных файлов (каждая строка первого файла
+     соединяется с соответствующей строкой второго файла);
+	 // main4 ["a.txt", "a2.txt", "res.txt"]
+	 // "a.txt" - создан, "a2.txt" - создается в коде, "res.txt" - генерируется
+-}
+main4 :: [String] -> IO ()
+main4 args = do
+	let [file1, file2, fileResulted] = args
+	writeFile file2 ( take 20 $ cycle "1\n" )
+	readed1 <- readFile file1
+	readed2 <- readFile file2
+	writeFile fileResulted ( additionalMain4 readed1 readed2 )
+
+additionalMain4 r1 r2 = 
+	concat$ zipWith (\x y -> x ++ " " ++ y ++ "\n") (lines r1) (lines r2)
+{-
+  5) генерация случайного текстового файла (случайность должна ограничиваться
+     максимальным количеством строк в файле и символов в строке).-}
