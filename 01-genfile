@@ -1,0 +1,20 @@
+{-
+  В параметрах командной строки заданы целое число N, текстовая строка и имя файла.
+  Создать файл с заданным именем, содержащий N-кратное повторение заданной строки.
+
+  Совет: для запуска функции main в ghci с заданием параметров командной строки удобно
+  использовать команду интерпретатора :main, например:
+
+     ghci> :main 1000 "Привет, мир" hello.txt
+	 // :main 10 "Hi!" a.txt
+-}
+import System.Environment
+
+createFile :: Int -> String -> FilePath -> IO ()
+createFile n s fname = writeFile fname ( take f $ cycle newString )
+	where
+		( f, newString ) = ( n * length newString, s++"\n" )
+
+main = do
+  [n_str, text, fname] <- getArgs
+  createFile (read n_str) text fname
