@@ -1,4 +1,6 @@
 
+-- test
+
 {-
   Имеется тип данных для представления арифметических выражений с целыми числами
   и функция для вычисления его значения. 
@@ -10,8 +12,8 @@ data Expr = I Int            -- целочисленная константа
 
 eval :: Expr -> Int
 eval (I n) = n
-eval (e1 `Add` e2) = eval e1 + eval e2
-eval (e1 `Mul` e2) = eval e1 * eval e2
+eval (ex1 `Add` ex2) = eval ex1 + eval ex2
+eval (ex1 `Mul` ex2) = eval ex1 * eval ex2
 
 {-
   Реализуйте для этого типа экземпляр класса типов Eq так,
@@ -20,7 +22,7 @@ eval (e1 `Mul` e2) = eval e1 * eval e2
 -}
 
 instance Eq Expr where
-  (==) = undefined
+  ex1 == ex2 = eval ex1 == eval ex2
 
 {-
   Реализуйте для этого типа экземпляр класса типов Show так,
@@ -29,8 +31,15 @@ instance Eq Expr where
   что все числа в выражении положительные.
 -}
 
+data Operation = A | M
+
+show1 (I n) _ = show n
+show1 (ex1 `Add` ex2) A = (show1 ex1 A)++"+"++(show1 ex2 A)
+show1 (ex1 `Add` ex2) M = "("++(show1 ex1 A)++"+"++(show1 ex2 A)++")"
+show1 (ex1 `Mul` ex2) _ = (show1 ex1 M)++"*"++(show1 ex2 M)
+		
 instance Show Expr where
-  show = undefined
+  show ex = show1 ex A
 
 -- Тесты
 test = all (== expr 4) exprs
@@ -47,3 +56,10 @@ test = all (== expr 4) exprs
 {-
   Напишите экземпляр класса типов Ord, который сравнивает выражения по их значению.
 -}
+
+instance Ord Expr where
+  ex1 < ex2 = eval ex1 < eval ex2
+  ex1 > ex2 = eval ex1 > eval ex2
+  ex1 <= ex2 = ex1 < ex2 || ex1 == ex2
+  ex1 >= ex2 = ex1 > ex2 || ex1 == ex2
+  
