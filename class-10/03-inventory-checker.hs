@@ -1,6 +1,7 @@
 import Control.Monad
 import Data.List
 import System.Environment
+import Data.Maybe
 
 {-
    Дан текстовый файл (inventory.txt)  с перечислением всей имеющейся на складе
@@ -18,13 +19,21 @@ data ArmorItem = ArmorItem ArmorKind ArmorType
 data ArmorKit = ArmorKit ArmorKind [ArmorType]
    deriving (Show, Eq)
 
+parserStr s = 
+	let (kd, tp) = span (/= ' ') s in ArmorItem (read kd) (read tp)
+   
 loadInventory :: FilePath -> IO [ArmorItem]
-loadInventory = undefined
+loadInventory fileName = (readFile fileName) >>= return . map parserStr . lines
 
 buildArmorKit :: ArmorKind -> [ArmorItem] -> Maybe ArmorKit
-buildArmorKit = undefined
+buildArmorKit kd xs = if (length $ nub tp) == 5 then Just (ArmorKit kd tp) else Nothing
+	where
+		tp = map (\(ArmorItem _ t) -> t) $ filter (\(ArmorItem k _) -> k == kd) xs
 
 buildKits :: [ArmorItem] -> Maybe [ArmorKit]
-buildKits = undefined
+buildKits xs = sequence $ filter (isJust) ls
+	where
+		ls = zipWith buildArmorKit [Chitin, Hide, Leather, Elven, Scaled, Glass, ImperialLight] (replicate 7 xs)
 
-main = (head `liftM` getArgs) >>= loadInventory >>= undefined >>= print
+{- :main "inventory.txt" -}
+main = (head `liftM` getArgs) >>= loadInventory >>= print . buildKits
