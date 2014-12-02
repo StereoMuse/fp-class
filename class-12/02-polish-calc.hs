@@ -22,22 +22,32 @@
    с журналом типа Sum Int).
 -}
 
-
 import Control.Monad
 import Control.Monad.State
+import Control.Monad.Reader
+import Control.Monad.Writer
+import Control.Monad.Trans.Maybe
 
 type Stack = [Int]
 
-push :: Int -> State Stack ()
-push x = get >>= put . (x:)
+--push :: Int -> State Stack ()
+push x = tell (Sum 1) >> get >>= put . (x:)
 
-pop :: State Stack Int
-pop = get >>= \(x:xs) -> put xs >> return x
+--pop :: State Stack Int
+pop = do
+	tell (Sum 1)
+	y <- get
+	guard(not $ null y)
+	put (tail y)
+	return (head y)
 
-evalRPN :: String -> Int
-evalRPN xs = head $ execState (mapM step $ words xs) []
-  where
-    step "+" = processTops (+)
-    step "*" = processTops (*)
-    step  n  = push (read n)
-    processTops op = op `liftM` pop `ap` pop >>= push
+--evalRPN :: String -> Int
+evalRPN y = 
+	let
+		((val, sum), resulted) = runState (runWriterT (runMaybeT ((mapM step $ words y)))) []
+		step "+" = processTops (+)
+		step "*" = processTops (*)
+		step n = push (read n)
+		processTops op = op `liftM` pop `ap` pop >>= push
+	in (if val == Nothing then Nothing else Just (head resulted), getSum sum)
+	

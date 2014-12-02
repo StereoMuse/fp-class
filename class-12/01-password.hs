@@ -11,25 +11,32 @@
 import Control.Monad
 import Control.Monad.Trans
 import Control.Monad.Trans.Maybe
-
+import Control.Monad.Writer
+import Control.Monad.Reader
 import Data.Char
+import Data.Maybe
+import System.Environment
+				
+--isValid :: String -> [String] -> Bool
+isValid s allS =( length s >= read minLength &&(not (read alpha) || (any isAlpha s) )&&(not (read number) || (any isNumber s) )&&(not (read punctuation) || (any isPunctuation s) ) )
+	where
+		[minLength, alpha, number,punctuation] = allS
 
-isValid :: String -> Bool
-isValid s = length s >= 8 && 
-                any isAlpha s && 
-                any isNumber s && 
-                any isPunctuation s
-
-getValidPassword :: MaybeT IO String
-getValidPassword = do
-  lift $ putStrLn "Введите новый пароль:"
-  s <- lift getLine
-  guard (isValid s)
-  return s
+--getValidPassword :: MaybeT IO String
+getValidPassword sss = do
+	liftIO $ putStrLn "Введите новый пароль:"
+	s <- liftIO getLine
+	tell $ [s]
+	guard (isValid s sss)
+	return s
  
-askPassword :: MaybeT IO ()
+--askPassword :: MaybeT IO ()
 askPassword = do
-  value <- msum $ repeat getValidPassword
-  lift $ putStrLn "Сохранение в базе данных..."
+	con <- lift ask
+	value <- msum $ repeat ( getValidPassword con )
+	liftIO $ putStrLn "Сохранение в базе данных..."
 
-main = runMaybeT askPassword
+main = do
+	allS <- getArgs
+	(x,passwords) <- runWriterT (runReaderT (runMaybeT askPassword) allS )
+	print passwords
