@@ -18,7 +18,7 @@ data Scheme = FTP | HTTP | HTTPS | Unk String
               deriving Show
 type Server = String
 type Path = String
-data URL = URL Scheme Server Path
+data URL = URL Scheme Login Password Server Port Path Parameters Anchor
            deriving Show
 
 scheme = (string "https" >> return HTTPS) <|>
@@ -26,7 +26,42 @@ scheme = (string "https" >> return HTTPS) <|>
          (string "ftp" >> return FTP) <|>
          Unk `liftM` lowers
 
+login = do
+	log <- manyl (sat (/= ':'))
+	char ':'
+	return (log)
+
+password = do
+	pass <- many1 (sat (/= '@'))
+	char @
+	return pass
+	
+server = do
+	serv <- manyl (sat (/= '@'))
+	return serv
+
+port = do
+	p <- string ":"
+	porttt <- manyl (sat (/= '?'))
+	char '/'
+	return porttt
+	
+path = do
+	pathhh <- manyl (sat (/= '?'))
+	char '?'
+	return pathhh
+	
+params = do
+	par <- manyl (sat (/= '#'))
+	char '@'
+	return par
+
 url = URL <$>
       scheme <*>
-      (string "://" >> many1 (sat (/='/'))) <*>
+      (string "://" >> optional "" login) <*>
+	  optional "" pasword <*>
+	  server <*>
+	  optional "" port <*>
+	  optional "" path <*>
+	  optional "" params <*>
       many (sat $ const True)

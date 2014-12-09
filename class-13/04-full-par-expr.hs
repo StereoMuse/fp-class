@@ -15,22 +15,31 @@ data Op = Plus | Minus
 -}
 
 {-
-expr  ::=  nat | '(' expr op expr ')'
+expr  ::=  exprrr | '(' exprrr ')'
 op    ::=  '+' | '-'
 nat   ::=  {digit}+
 digit ::=  '0' | '1' | '2' | ... | '9'
 -}
 
 expr :: Parser Expr
-expr = token (constant <|>  bracket "(" ")"  binary)
+expr = bracket "(" ")" exprrr <|> exprrr
+
+exprrr = token term >>= elseExpr
   where
-    constant = Con `liftM` natural
-    binary = do
-      e1 <- expr
-      p <- op
-      e2 <- expr
-      return $ Bin p e1 e2
-    op = (symbol "+" >> return Plus) <|> (symbol "-" >> return Minus)
+	elseExpr e1 = optional e1 $ do
+    p <- token op
+    e2 <- token term
+		where term = constant <|> bracket "(" ")" constant <|>
+			(token (char '(') >> constant <|> 
+			(do
+				x <- constant
+				token (char ')')
+				return x)
+	elseExpr $ Bin p e1 e2
+	
+constant = Con `liftM` natural
+
+op = (symbol "+" >> return Plus) <|> (symbol "-" >> return Minus)
 
 test =  parse expr "2" == parse expr "(2)" &&
         parse expr "((2)+3)" == parse expr "(2+3)" 
